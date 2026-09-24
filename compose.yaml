@@ -1,0 +1,48 @@
+name: traceforge
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-traceforge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-traceforge}
+      POSTGRES_DB: ${POSTGRES_DB:-traceforge}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-traceforge}:${POSTGRES_PASSWORD:-traceforge}@db:5432/${POSTGRES_DB:-traceforge}
+      TEST_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-traceforge}:${POSTGRES_PASSWORD:-traceforge}@db:5432/${POSTGRES_DB:-traceforge}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "alembic upgrade head && uvicorn traceforge.main:app --host 0.0.0.0 --port 8000 --reload"]
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend/src:/app/src
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  frontend:
+    build: ./frontend
+    environment:
+      API_PROXY_TARGET: http://backend:8000
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./frontend/src:/app/src
+    depends_on:
+      backend:
+        condition: service_healthy
+volumes:
+  postgres_data:
