@@ -12,7 +12,9 @@ Alembic migrations, and CRUD APIs for projects, configurations, datasets, and ca
 See [data model and API](data-model.md) and [execution and traces](execution.md)
 for implemented contracts, the flow diagram, and tradeoffs. Provider interfaces,
 an offline fake, and typed synthetic support tools now drive run execution.
-No model API keys are needed.
+Versioned deterministic scorers, coverage-aware metrics, and compatible-run
+comparison are implemented; see [scoring contracts](scoring.md). No model API keys
+are needed.
 
 Planned dependency direction: API and CLI call application use cases; application
 use cases operate on domain records and use provider/persistence adapters. Domain
@@ -26,7 +28,8 @@ TraceForge/
       main.py               # current API entry point
       api/                  # CRUD routes and request/response schemas
       domain/               # provider-independent status enums and transition rules
-      application/          # runner, evaluation persistence, and trace sanitization
+      application/          # execution, scoring persistence, comparison, sanitization
+      scoring/              # typed expectations, pure scorers, metric aggregation
       providers/            # typed provider contract and deterministic fake
       persistence/          # SQLAlchemy records and session management
       tools/                # typed registry and fictional support tools
@@ -95,10 +98,10 @@ identifies the exact current guarantees and remaining work.
    Acceptance: repeated identical inputs produce identical semantic traces;
    malformed calls, tool errors, and timeouts have explicit states. Process loss
    leaves a visible running state and committed partial trace; recovery is deferred.
-4. **Scoring:** add exact-match correctness and expected tool-use scoring, versioned
+4. **Scoring (complete):** add exact-match correctness and expected tool-use scoring, versioned
    scorer configuration, and threshold evaluation. Acceptance: known fixtures cover
    pass/fail boundaries, missing answers, infrastructure errors, and empty datasets.
-5. **Comparison and replay:** list runs, compare versions on a shared dataset
+5. **Comparison (complete) and replay (deferred):** list runs, compare versions on a shared dataset
    revision, inspect case details, and replay recorded failures. Acceptance: replay
    never calls a model or tool; incompatible comparisons are clearly identified.
 6. **CI integration:** add a CLI over the same use cases, JSON results, deterministic

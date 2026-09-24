@@ -10,11 +10,16 @@ from sqlalchemy.orm import Session
 from traceforge.application.evaluations import EvaluationService, create_run
 from traceforge.persistence.database import get_engine
 from traceforge.persistence.models import AgentConfiguration, EvaluationDataset, Project, TestCase
-from traceforge.providers.fake import SCENARIOS
+from traceforge.providers.base import ModelResponse
+from traceforge.providers.fake import FINAL, SCENARIOS
 
 
-def seed_demo(session: Session) -> tuple[UUID, UUID, UUID]:
-    name = "TraceForge fictional support demo"
+def seed_demo(session: Session, *, scoring: bool = False) -> tuple[UUID, UUID, UUID]:
+    name = (
+        "TraceForge fictional support scoring demo"
+        if scoring
+        else "TraceForge fictional support demo"
+    )
     project = session.scalar(select(Project).where(Project.name == name))
     if project is not None:
         agent = session.scalar(
@@ -39,6 +44,7 @@ def seed_demo(session: Session) -> tuple[UUID, UUID, UUID]:
         provider="fake",
         model_name="deterministic-v1",
         parameters={"max_steps": 8},
+        pricing={"input_usd_per_million": "1", "output_usd_per_million": "2"} if scoring else None,
         system_prompt="Help with fictional orders using the registered support tools.",
     )
     dataset = EvaluationDataset(project_id=project.id, name="Support scenarios v1")
@@ -51,6 +57,20 @@ def seed_demo(session: Session) -> tuple[UUID, UUID, UUID]:
                 name=scenario,
                 input={"scenario": scenario},
                 expected_output=None,
+                expectations=[
+                    {"name": "answer", "type": "exact_output", "expected": FINAL.text},
+                    {
+                        "name": "tools",
+                        "type": "tool_selection",
+                        "expected": [
+                            action.tool_call.name
+                            for action in SCENARIOS[scenario]
+                            if isinstance(action, ModelResponse) and action.tool_call is not None
+                        ],
+                    },
+                ]
+                if scoring
+                else [],
             )
         )
     session.commit()
@@ -60,9 +80,10 @@ def seed_demo(session: Session) -> tuple[UUID, UUID, UUID]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true", help="Create and execute a new demo run")
+    parser.add_argument("--scoring", action="store_true", help="Use the versioned scoring demo")
     args = parser.parse_args()
     with Session(get_engine(), expire_on_commit=False) as session:
-        project_id, agent_id, dataset_id = seed_demo(session)
+        project_id, agent_id, dataset_id = seed_demo(session, scoring=args.scoring)
         output = {
             "project_id": str(project_id),
             "agent_configuration_id": str(agent_id),

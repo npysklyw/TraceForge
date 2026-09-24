@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Annotated, Literal, Self
 from uuid import UUID
 
@@ -13,6 +14,7 @@ from pydantic import (
 
 from traceforge.application.redaction import TraceSanitizer
 from traceforge.domain.status import CaseStatus, RunStatus
+from traceforge.scoring.expectations import Expectation, Pricing, parse_expectations
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Description = Annotated[str, StringConstraints(max_length=10000)]
@@ -38,6 +40,8 @@ class Request(BaseModel):
 
     @model_validator(mode="after")
     def bound_payload(self) -> Self:
+        if hasattr(self, "expectations") and self.expectations is not None:
+            parse_expectations(self.expectations)
         validate_postgres_text(self.model_dump())
         if len(self.model_dump_json().encode()) > 262144:
             raise ValueError("Record payload must not exceed 256 KiB")
@@ -54,7 +58,7 @@ class Patch(Request):
     def validate_changes(self) -> Self:
         if not self.model_fields_set:
             raise ValueError("Provide at least one field to update")
-        for field in self.model_fields_set - {"expected_output"}:
+        for field in self.model_fields_set - {"expected_output", "pricing"}:
             if getattr(self, field) is None:
                 raise ValueError(f"{field} cannot be null")
         return self
@@ -90,6 +94,7 @@ class ProjectResponse(RecordResponse):
 
 
 class AgentConfigurationCreate(Request):
+    pricing: Pricing | None = None
     name: Name
     provider: Provider = "fake"
     model_name: Name = "deterministic-v1"
@@ -98,6 +103,7 @@ class AgentConfigurationCreate(Request):
 
 
 class AgentConfigurationUpdate(Patch):
+    pricing: Pricing | None = None
     name: Name | None = None
     provider: Provider | None = None
     model_name: Name | None = None
@@ -106,6 +112,7 @@ class AgentConfigurationUpdate(Patch):
 
 
 class AgentConfigurationResponse(RecordResponse):
+    pricing: Pricing | None
     project_id: UUID
     name: str
     provider: Provider
@@ -133,18 +140,21 @@ class DatasetResponse(RecordResponse):
 
 
 class TestCaseCreate(Request):
+    expectations: list[Expectation] = Field(default_factory=list, max_length=64)
     name: Name
     input: dict[str, JsonValue]
     expected_output: JsonValue
 
 
 class TestCaseUpdate(Patch):
+    expectations: list[Expectation] | None = Field(default=None, max_length=64)
     name: Name | None = None
     input: dict[str, JsonValue] | None = None
     expected_output: JsonValue = None
 
 
 class TestCaseResponse(RecordResponse):
+    expectations: list[Expectation]
     dataset_id: UUID
     name: str
     input: dict[str, JsonValue]
@@ -158,6 +168,8 @@ class EvaluationRunCreate(Request):
 
 
 class EvaluationRunResponse(RecordResponse):
+    pricing_snapshot: Pricing | None
+    scoring_version: str | None
     project_id: UUID
     agent_configuration_id: UUID
     dataset_id: UUID
@@ -174,6 +186,10 @@ class CaseResultCreate(Request):
 
 
 class CaseResultResponse(RecordResponse):
+    evaluation_outcome: Literal["passed", "failed", "not_scored"]
+    expectations_snapshot: list[Expectation] | None
+    scored_at: AwareDatetime | None
+    estimated_cost_usd: Decimal | None
     run_id: UUID
     dataset_id: UUID
     test_case_id: UUID
@@ -230,6 +246,7 @@ class ExecutionEventResponse(RecordResponse):
 
 
 class ResultDetail(CaseResultResponse):
+    scoring_results: list["ScoringResultResponse"]
     events: list[ExecutionEventResponse]
     tool_calls: list[ToolCallResponse]
 
@@ -251,6 +268,10 @@ class ScoringResultCreate(Request):
 
 
 class ScoringResultResponse(RecordResponse):
+    scorer_type: str
+    explanation: str
+    expected: JsonValue
+    observed: JsonValue
     case_result_id: UUID
     scorer_name: str
     scorer_version: str
