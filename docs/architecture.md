@@ -1,13 +1,5 @@
 # MVP architecture and implementation plan
 
-## Repository inspection
-
-The initial directory was empty, with no source, configuration, Git repository,
-or existing project instructions. This foundation is independently authored.
-Do not introduce or reference proprietary IBM code, prompts, datasets,
-terminology, architectures, or internal failure cases. Future fixtures must be
-original synthetic examples or explicitly licensed public data with provenance.
-
 ## Architecture
 
 Use one Python 3.12 / FastAPI application, one React / TypeScript / Vite UI, and
