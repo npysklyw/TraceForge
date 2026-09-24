@@ -71,7 +71,7 @@ def commit(session: Session) -> None:
 
 
 def update(record: Record, payload: s.Patch) -> None:
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    for field, value in payload.model_dump(exclude_unset=True, mode="json").items():
         setattr(record, field, value)
 
 
@@ -95,7 +95,7 @@ def editable_dataset(session: Session, dataset_id: UUID) -> EvaluationDataset:
 
 @router.post("/projects", response_model=s.ProjectResponse, status_code=201, tags=["projects"])
 def create_project(payload: s.ProjectCreate, session: DB) -> Project:
-    record = Project(**payload.model_dump())
+    record = Project(**payload.model_dump(mode="json"))
     session.add(record)
     commit(session)
     return record
@@ -136,7 +136,7 @@ def create_agent(
     project_id: UUID, payload: s.AgentConfigurationCreate, session: DB
 ) -> AgentConfiguration:
     get_record(session, Project, project_id)
-    record = AgentConfiguration(project_id=project_id, **payload.model_dump())
+    record = AgentConfiguration(project_id=project_id, **payload.model_dump(mode="json"))
     session.add(record)
     commit(session)
     return record
@@ -201,7 +201,7 @@ def delete_agent(agent_id: UUID, session: DB) -> Response:
 )
 def create_dataset(project_id: UUID, payload: s.DatasetCreate, session: DB) -> EvaluationDataset:
     get_record(session, Project, project_id)
-    record = EvaluationDataset(project_id=project_id, **payload.model_dump())
+    record = EvaluationDataset(project_id=project_id, **payload.model_dump(mode="json"))
     session.add(record)
     commit(session)
     return record
@@ -251,7 +251,7 @@ def delete_dataset(dataset_id: UUID, session: DB) -> Response:
 )
 def create_case(dataset_id: UUID, payload: s.TestCaseCreate, session: DB) -> TestCase:
     editable_dataset(session, dataset_id)
-    record = TestCase(dataset_id=dataset_id, **payload.model_dump())
+    record = TestCase(dataset_id=dataset_id, **payload.model_dump(mode="json"))
     session.add(record)
     commit(session)
     return record

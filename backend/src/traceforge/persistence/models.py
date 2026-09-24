@@ -1,6 +1,7 @@
 """Typed relational records. Cross-scope references are constrained in PostgreSQL."""
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from uuid import UUID, uuid4
 
 from pydantic import JsonValue
@@ -11,6 +12,7 @@ from sqlalchemy import (
     ForeignKey,
     ForeignKeyConstraint,
     MetaData,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
@@ -78,6 +80,7 @@ class AgentConfiguration(Record):
     parameters: Mapped[dict[str, JsonValue]] = mapped_column(
         JSONB, default=dict, server_default="{}"
     )
+    pricing: Mapped[dict[str, JsonValue] | None] = mapped_column(JSONB(none_as_null=True))
     project: Mapped[Project] = relationship(back_populates="agent_configurations")
 
 
@@ -108,6 +111,7 @@ class TestCase(Record):
         UniqueConstraint("id", "dataset_id"),
         CheckConstraint("length(trim(name)) > 0", name="name_not_blank"),
         CheckConstraint("jsonb_typeof(input) = 'object'", name="input_object"),
+        CheckConstraint("jsonb_typeof(expectations) = 'array'", name="expectations_array"),
     )
     dataset_id: Mapped[UUID] = mapped_column(
         ForeignKey("evaluation_datasets.id", ondelete="RESTRICT"), index=True
@@ -115,6 +119,9 @@ class TestCase(Record):
     name: Mapped[str] = mapped_column(String(200))
     input: Mapped[dict[str, JsonValue]] = mapped_column(JSONB)
     expected_output: Mapped[JsonValue] = mapped_column(JSONB(none_as_null=False), nullable=False)
+    expectations: Mapped[list[dict[str, JsonValue]]] = mapped_column(
+        JSONB, default=list, server_default="[]"
+    )
     dataset: Mapped[EvaluationDataset] = relationship(back_populates="test_cases")
 
 
@@ -152,6 +159,8 @@ class EvaluationRun(Record):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     error: Mapped[str | None] = mapped_column(Text)
+    pricing_snapshot: Mapped[dict[str, JsonValue] | None] = mapped_column(JSONB(none_as_null=True))
+    scoring_version: Mapped[str | None] = mapped_column(String(50))
     case_results: Mapped[list["CaseResult"]] = relationship(
         back_populates="run", passive_deletes="all"
     )
@@ -186,6 +195,13 @@ class CaseResult(Record):
             name="timestamp_order",
         ),
     )
+
+    @property
+    def evaluation_outcome(self) -> str:
+        from traceforge.scoring.metrics import outcome
+
+        return outcome(self)
+
     run_id: Mapped[UUID] = mapped_column(index=True)
     dataset_id: Mapped[UUID] = mapped_column()
     test_case_id: Mapped[UUID] = mapped_column(index=True)
@@ -212,11 +228,18 @@ class CaseResult(Record):
     error: Mapped[str | None] = mapped_column(Text)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expectations_snapshot: Mapped[list[dict[str, JsonValue]] | None] = mapped_column(
+        JSONB(none_as_null=True)
+    )
+    scored_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    estimated_cost_usd: Mapped[Decimal | None] = mapped_column(Numeric(38, 18))
     run: Mapped[EvaluationRun] = relationship(back_populates="case_results")
     tool_calls: Mapped[list["ToolCall"]] = relationship(
         passive_deletes="all", order_by="ToolCall.sequence"
     )
-    scoring_results: Mapped[list["ScoringResult"]] = relationship(passive_deletes="all")
+    scoring_results: Mapped[list["ScoringResult"]] = relationship(
+        passive_deletes="all", order_by="ScoringResult.scorer_name"
+    )
     events: Mapped[list["ExecutionEvent"]] = relationship(
         back_populates="case_result", passive_deletes="all", order_by="ExecutionEvent.sequence"
     )
@@ -299,6 +322,10 @@ class ScoringResult(Record):
     case_result_id: Mapped[UUID] = mapped_column(
         ForeignKey("case_results.id", ondelete="RESTRICT"), index=True
     )
+    scorer_type: Mapped[str] = mapped_column(String(50), default="legacy", server_default="legacy")
+    explanation: Mapped[str] = mapped_column(Text, default="", server_default="")
+    expected: Mapped[JsonValue] = mapped_column(JSONB, nullable=True)
+    observed: Mapped[JsonValue] = mapped_column(JSONB, nullable=True)
     scorer_name: Mapped[str] = mapped_column(String(200))
     scorer_version: Mapped[str] = mapped_column(String(50))
     value: Mapped[float] = mapped_column()

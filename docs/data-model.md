@@ -17,12 +17,16 @@ API operations, trace example, and exact demo commands.
   `schema_version=1`. This is a format version, not a revision counter.
 - **TestCase:** belongs to a dataset; name, JSONB input object, and required JSONB
   expected output. Expected output can be any JSON value, including JSON null.
+  A JSONB array of typed, named expectations explicitly declares required scorers.
 - **EvaluationRun:** references a project and a configuration/dataset in that
   same project, plus execution status, start/finish times, and an optional error.
+  Pricing and scorer contract version are snapshotted at creation.
 - **CaseResult:** references a run and a case in that run's dataset. Contains
   execution status, JSONB response, sanitized input snapshot, provider/model,
   structured error, timestamps, latency, and reported token counts. One result per
-  run/case; retries will require an explicit attempts design later.
+  run/case; retries will require an explicit attempts design later. Expectations are
+  snapshotted at run creation; scored_at and decimal estimated_cost_usd record
+  scoring progress without mutating execution evidence.
 - **ToolCall:** belongs to a case result; zero-based sequence, optional provider
   call ID, tool name, JSONB arguments/output, and error. Sequence is unique per
   result and determines retrieval order; gaps are allowed. Execution also records
@@ -32,7 +36,8 @@ API operations, trace example, and exact demo commands.
   This provides the total order across model and tool observations.
 - **ScoringResult:** belongs to a case result; scorer name/version, normalized
   numeric value from 0 to 1, pass/fail flag, and JSONB details. Each scorer version
-  can produce one score per case result. Scoring implementation is deferred.
+  can produce one score per case result. Explicit scorer type, explanation, expected,
+  and observed values are stored. See [scoring contracts](scoring.md).
 
 Every record has a UUID primary key, `created_at`, and `updated_at`. PostgreSQL
 uses timezone-aware timestamps and sessions use UTC; ORM updates set `updated_at`
@@ -56,7 +61,7 @@ the run could not execute successfully.
 New case execution states: `pending`, `running`, `completed`, `error`, `skipped`.
 `completed` means successful execution without a correctness assertion; `error`
 means execution failure. The legacy `passed`/`failed` enum values remain readable
-for backward compatibility, but new transitions into them are rejected. Future
+for backward compatibility, but new transitions into them are rejected. Deterministic
 scoring belongs in `ScoringResult`, not case execution status. A pending case may
 be skipped; a pending run may be cancelled without a start timestamp. Terminal
 states cannot restart through domain transition rules.
@@ -117,15 +122,14 @@ of earlier draft edits, and project display metadata remains editable.
 Mutation routes lock records before checking references. Run creation locks the
 configuration and dataset before persisting the run and its pending case results.
 Direct database writes can bypass API freeze rules; this is not a database audit
-or security boundary. Schema-level immutable snapshots/revision lineage remain a
-future decision before external writers or richer version comparison are added.
+or security boundary. Expectation and pricing snapshots now protect scoring from later source edits.
+Full revision lineage and database-enforced immutability remain deferred.
 
 There is no generic repository layer. Shared route helpers cover repeated lookup,
 pagination, transaction conflict handling, and field updates only. Application use
 cases now live in `application/evaluations.py`, separate from the API transport.
 
-Deferred: real providers, scoring algorithms, bulk imports, run comparison/replay,
-full snapshot/revision lineage, retry attempts, durable recovery, authentication,
-billing, and production deployment. Current execution preserves a sanitized input
-snapshot and freezes referenced source records through the API. The next milestone
-is scoring the observable behavior independently of execution success.
+Deferred: real providers, bulk imports, replay, full revision lineage, retry
+attempts, durable recovery, authentication, billing, and production deployment.
+Deterministic scoring and compatible-run comparison are implemented; see
+[scoring and comparison](scoring.md) for schema additions and API contracts.

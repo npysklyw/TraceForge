@@ -1,7 +1,8 @@
 # Deterministic execution and observable traces
 
-Step 3 extends the existing run, case-result, and tool-call records. It does not
-score outputs against expectations or call any external model service. All demo
+Execution extends the existing run, case-result, and tool-call records. Step 4
+adds [separate deterministic scoring](scoring.md) after outcome persistence. No
+external model service is called. All demo
 data, policies, outputs, and failure scenarios are original fictional examples.
 
 ## Boundaries
@@ -46,7 +47,8 @@ flowchart TD
     K -->|Timeout or provider error| N
     K -->|Final text| O[Commit case completed]
     N --> P{More cases?}
-    O --> P
+    O --> S[Score snapshot and commit scoring results]
+    S --> P
     P -->|Yes| I
     P -->|No| Q[Commit aggregate run completed or failed]
 ```
@@ -73,21 +75,22 @@ to verify that earlier outcomes and the running claim are already visible.
 
 New cases transition `pending → running → completed` on successful execution, or
 `pending → running → error` on provider/tool/step-limit failure. `completed` does
-not assert correctness: `expected_output` is not evaluated in this milestone.
+not assert correctness: explicit `expectations` are evaluated by a separate service.
+The legacy `expected_output` field is metadata, not an implicit assertion.
 `pending → skipped` remains a domain transition, but there is no skip endpoint.
 
 The original PostgreSQL enum also contains `passed` and `failed`. They remain
 readable for compatibility with existing data and the initial migration, but
 the domain validator rejects new transitions into those states. They are legacy
-scoring states, not values produced by the runner. Future scoring belongs in the
+scoring states, not values produced by the runner. Deterministic scoring belongs in the
 existing `ScoringResult` records and must not overwrite execution status. Removing
 legacy enum values requires a separately designed historical-data migration.
 
 Runs transition `pending → running → completed` if every executed case succeeds,
 or `pending → running → failed` if any case has an execution error. The aggregate
 response includes `total_cases` and `case_counts` for every enum value. A failed
-run may still contain successfully completed cases. No scoring algorithm or
-scoring endpoint is introduced.
+run may still contain successfully completed cases. Their evaluation outcomes are
+reported separately as passed, failed, or not_scored.
 
 ## Schema extension and migration
 
@@ -233,6 +236,6 @@ Event and outcome commits are separate, so a crash can leave a terminal trace
 event without a committed terminal case state. Durable recovery belongs to a
 later worker milestone.
 
-No real LLM adapter, scorer, Celery, Redis worker, or new frontend screen is added.
-The next milestone is deterministic correctness/tool-use scoring into the existing
-`ScoringResult` table, with scorer versioning and explicit threshold semantics.
+No real LLM adapter, Celery, Redis worker, or new frontend screen is added.
+Deterministic scorers and comparison now use the existing `ScoringResult` table;
+see [scoring](scoring.md) for versioning, metric denominators, and API examples.

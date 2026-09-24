@@ -1,13 +1,16 @@
 """Short transactions around claims, observations, and case outcomes; no HTTP dependencies."""
 
+from copy import deepcopy
 from datetime import UTC, datetime
 from uuid import UUID
 
+from pydantic import ValidationError
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from traceforge.application.redaction import TraceSanitizer
 from traceforge.application.runner import AgentRunner, ExecutionEventData, ToolObservation
+from traceforge.application.scoring import score_case
 from traceforge.domain.status import (
     CaseStatus,
     RunStatus,
@@ -27,6 +30,7 @@ from traceforge.persistence.models import (
 )
 from traceforge.providers.base import ModelProvider, ModelRequest
 from traceforge.providers.fake import FakeModelProvider
+from traceforge.scoring.expectations import VERSION, Pricing, parse_expectations
 from traceforge.tools.registry import ToolRegistry
 from traceforge.tools.support import support_registry
 
@@ -89,8 +93,27 @@ def create_run(
         raise InvalidEvaluation("The dataset must contain at least one test case")
     if len(cases) > 1000:
         raise InvalidEvaluation("Synchronous evaluations support at most 1000 cases")
+    try:
+        if agent.pricing is not None:
+            Pricing.model_validate(agent.pricing)
+        snapshots = {
+            case.id: [
+                item.model_dump(mode="json") for item in parse_expectations(case.expectations)
+            ]
+            for case in cases
+        }
+        for snapshot in snapshots.values():
+            for item in snapshot:
+                if TraceSanitizer(item).clean(item) != item:
+                    raise InvalidEvaluation("Expectations cannot contain secrets or reasoning")
+    except ValidationError as exc:
+        raise InvalidEvaluation("Invalid expectations or pricing configuration") from exc
     run = EvaluationRun(
-        project_id=project_id, agent_configuration_id=agent_id, dataset_id=dataset_id
+        project_id=project_id,
+        agent_configuration_id=agent_id,
+        dataset_id=dataset_id,
+        pricing_snapshot=deepcopy(agent.pricing),
+        scoring_version=VERSION,
     )
     session.add(run)
     session.flush()
@@ -102,6 +125,7 @@ def create_run(
                 dataset_id=dataset_id,
                 test_case_id=case.id,
                 input_snapshot=sanitizer.object(case.input),
+                expectations_snapshot=snapshots[case.id],
                 provider=agent.provider,
                 model_name=sanitizer.text(agent.model_name)[:200],
             )
@@ -228,6 +252,8 @@ class EvaluationService:
             result.total_tokens = outcome.usage.total_tokens
             session.commit()  # Each outcome survives a later case failure.
             session.expire(result, ["events", "tool_calls"])
+            if run.scoring_version is not None:
+                score_case(session, result.id, run)
 
         counts = case_counts(session, run.id)
         target_run = RunStatus.FAILED if counts.get("error", 0) else RunStatus.COMPLETED

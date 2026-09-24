@@ -1,11 +1,11 @@
 # TraceForge
 
 An independently developed evaluation and reliability platform for tool-calling
-AI agents. **Current scope: deterministic execution, trace capture, and CRUD APIs.**
+AI agents. **Current scope: deterministic execution, trace capture, scoring, and run comparison.**
 Projects, configurations, datasets, cases, and evaluation runs are persisted in
 PostgreSQL. Runs execute offline using a deterministic fake provider and typed
-fictional support tools. Scoring, real providers, bulk uploads, comparison, replay,
-and CI thresholds remain deferred.
+fictional support tools. Versioned deterministic scorers evaluate explicit test-case
+expectations. Real providers, bulk uploads, replay, and CI thresholds remain deferred.
 The React frontend remains the foundation shell.
 
 See [architecture and milestones](docs/architecture.md) for boundaries, proposed
@@ -172,8 +172,16 @@ Use `.venv/bin/python` on macOS/Linux. The seed is reusable; each execution crea
 a new run. Its eight cases intentionally include five recorded errors and three
 completed cases, so the demo run ends `failed`. This is expected behavior.
 
+## Scoring and comparison
+
+See [deterministic scoring](docs/scoring.md) for expectation examples, configured USD
+pricing, metric denominators, API routes, historical compatibility, and adding
+scorer types. Use `python -m traceforge.demo --scoring --execute` with the backend
+virtual environment for a separately named scoring demo. Execution errors remain
+unscored; evaluation outcomes never replace execution statuses.
+
 ## Next milestone
 
-Add versioned correctness and tool-use scorers writing to `ScoringResult`, without
-changing execution status. Define thresholds and failure denominators before CI.
-No real provider integration is needed for that milestone.
+Add CI thresholds and machine-readable CLI reports using evaluation coverage and
+end-to-end success rate, with explicit policy for execution errors. Real model
+providers and LLM-as-judge scoring are not required.
