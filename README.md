@@ -9,8 +9,7 @@ and CI thresholds remain deferred.
 The React frontend remains the foundation shell.
 
 See [architecture and milestones](docs/architecture.md) for boundaries, proposed
-data-contract decisions, and acceptance criteria. All future development and
-fixtures must remain independent of proprietary IBM materials.
+data-contract decisions, and acceptance criteria. 
 
 ## Start with Docker Compose
 
