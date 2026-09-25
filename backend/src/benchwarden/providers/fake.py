@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from traceforge.providers.base import (
+from benchwarden.providers.base import (
     ModelRequest,
     ModelResponse,
     ProviderError,

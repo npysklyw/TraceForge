@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from traceforge.main import app
+from benchwarden.main import app
 
 
 def test_health_contract():

@@ -1,19 +1,19 @@
 import pytest
 from pydantic import ValidationError
 
-from traceforge.api.schemas import (
+from benchwarden.api.schemas import (
     AgentConfigurationCreate,
     ProjectCreate,
     ProjectUpdate,
     ScoringResultCreate,
 )
-from traceforge.api.schemas import (
+from benchwarden.api.schemas import (
     TestCaseCreate as CaseCreate,
 )
-from traceforge.api.schemas import (
+from benchwarden.api.schemas import (
     TestCaseUpdate as CaseUpdate,
 )
-from traceforge.domain.status import (
+from benchwarden.domain.status import (
     CaseStatus,
     RunStatus,
     validate_case_transition,

@@ -3,8 +3,8 @@
 from alembic import context
 from sqlalchemy import create_engine, pool
 
-from traceforge.persistence.models import Base
-from traceforge.settings import get_settings
+from benchwarden.persistence.models import Base
+from benchwarden.settings import get_settings
 
 url = get_settings().database_url.get_secret_value()
 

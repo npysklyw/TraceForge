@@ -8,16 +8,16 @@ from pydantic import ValidationError
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from traceforge.application.redaction import TraceSanitizer
-from traceforge.application.runner import AgentRunner, ExecutionEventData, ToolObservation
-from traceforge.application.scoring import score_case
-from traceforge.domain.status import (
+from benchwarden.application.redaction import TraceSanitizer
+from benchwarden.application.runner import AgentRunner, ExecutionEventData, ToolObservation
+from benchwarden.application.scoring import score_case
+from benchwarden.domain.status import (
     CaseStatus,
     RunStatus,
     validate_case_transition,
     validate_run_transition,
 )
-from traceforge.persistence.models import (
+from benchwarden.persistence.models import (
     AgentConfiguration,
     CaseResult,
     EvaluationDataset,
@@ -28,11 +28,11 @@ from traceforge.persistence.models import (
     TestCase,
     ToolCall,
 )
-from traceforge.providers.base import ModelProvider, ModelRequest
-from traceforge.providers.fake import FakeModelProvider
-from traceforge.scoring.expectations import VERSION, Pricing, parse_expectations
-from traceforge.tools.registry import ToolRegistry
-from traceforge.tools.support import support_registry
+from benchwarden.providers.base import ModelProvider, ModelRequest
+from benchwarden.providers.fake import FakeModelProvider
+from benchwarden.scoring.expectations import VERSION, Pricing, parse_expectations
+from benchwarden.tools.registry import ToolRegistry
+from benchwarden.tools.support import support_registry
 
 
 class ResourceNotFound(Exception):

@@ -6,7 +6,7 @@ commit diff or tracked/untracked distinction is available. Files were inspected
 directly; the existing implementation was extended rather than replaced.
 
 Verification used Python 3.12 and the existing temporary PostgreSQL 17 instance
-on `127.0.0.1:55432`. `DATABASE_URL` and `TEST_DATABASE_URL` were set to that
+on `127.0.0.1:55432`. `BENCHWARDEN_DATABASE_URL` and `BENCHWARDEN_TEST_DATABASE_URL` were set to that
 instance for database checks. Credentials are omitted from this report. Each
 integration suite creates and drops its own schema. The temporary server was
 stopped after verification; its demo data is not part of the repository.
@@ -39,19 +39,20 @@ They do not cause test failures and were not suppressed.
 
 From `backend/`, with the two database environment variables set as described.
 The cache path below uses `$env:TEMP` instead of the original machine-specific
-absolute path; the other commands are unchanged:
+absolute path. Package and environment names in these examples were updated
+for the current branding; the results above describe the original Step 3 run:
 
 ```powershell
 .\.venv\Scripts\python.exe -m alembic upgrade head
 .\.venv\Scripts\python.exe -m alembic downgrade 0b3e65b38568
 .\.venv\Scripts\python.exe -m alembic upgrade head
 .\.venv\Scripts\python.exe -m alembic check
-.\.venv\Scripts\python.exe -m pytest -q -o "cache_dir=$env:TEMP/traceforge-pytest-cache"
+.\.venv\Scripts\python.exe -m pytest -q -o "cache_dir=$env:TEMP/benchwarden-pytest-cache"
 .\.venv\Scripts\python.exe -m ruff check .
 .\.venv\Scripts\python.exe -m ruff format --check .
 .\.venv\Scripts\python.exe -m mypy
-.\.venv\Scripts\python.exe -m traceforge.demo --execute
-.\.venv\Scripts\python.exe -m traceforge.demo
+.\.venv\Scripts\python.exe -m benchwarden.demo --execute
+.\.venv\Scripts\python.exe -m benchwarden.demo
 ```
 
 The pytest cache override avoids the previously encountered Windows cache-directory

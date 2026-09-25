@@ -3,10 +3,10 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from traceforge.api import schemas as s
-from traceforge.api.routes import DB, Limit, Offset, get_record, page
-from traceforge.application.comparison import RunComparison, compare_runs
-from traceforge.application.evaluations import (
+from benchwarden.api import schemas as s
+from benchwarden.api.routes import DB, Limit, Offset, get_record, page
+from benchwarden.application.comparison import RunComparison, compare_runs
+from benchwarden.application.evaluations import (
     EvaluationService,
     ExecutionConflict,
     InvalidEvaluation,
@@ -14,9 +14,9 @@ from traceforge.application.evaluations import (
     case_counts,
     create_run,
 )
-from traceforge.application.scoring import ScoringConflict, results_for_run, score_run
-from traceforge.persistence.models import CaseResult, EvaluationRun
-from traceforge.scoring.metrics import RunMetrics, aggregate
+from benchwarden.application.scoring import ScoringConflict, results_for_run, score_run
+from benchwarden.persistence.models import CaseResult, EvaluationRun
+from benchwarden.scoring.metrics import RunMetrics, aggregate
 
 router = APIRouter(tags=["evaluations"])
 

@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from traceforge.persistence.models import EvaluationRun
+from benchwarden.persistence.models import EvaluationRun
 
 pytestmark = pytest.mark.integration
 

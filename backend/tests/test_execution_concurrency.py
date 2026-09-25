@@ -6,9 +6,9 @@ import pytest
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from traceforge.application.evaluations import EvaluationService, ExecutionConflict, create_run
-from traceforge.domain.status import CaseStatus, RunStatus
-from traceforge.persistence.models import (
+from benchwarden.application.evaluations import EvaluationService, ExecutionConflict, create_run
+from benchwarden.domain.status import CaseStatus, RunStatus
+from benchwarden.persistence.models import (
     AgentConfiguration,
     CaseResult,
     EvaluationDataset,
@@ -18,10 +18,10 @@ from traceforge.persistence.models import (
     ScoringResult,
     ToolCall,
 )
-from traceforge.persistence.models import (
+from benchwarden.persistence.models import (
     TestCase as Case,
 )
-from traceforge.providers.fake import FakeModelProvider
+from benchwarden.providers.fake import FakeModelProvider
 
 pytestmark = pytest.mark.integration
 

@@ -7,10 +7,10 @@ import pytest
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from traceforge.application.comparison import compare_runs
-from traceforge.application.evaluations import EvaluationService, create_run
-from traceforge.application.scoring import score_run
-from traceforge.persistence.models import (
+from benchwarden.application.comparison import compare_runs
+from benchwarden.application.evaluations import EvaluationService, create_run
+from benchwarden.application.scoring import score_run
+from benchwarden.persistence.models import (
     AgentConfiguration,
     CaseResult,
     EvaluationDataset,
@@ -20,8 +20,8 @@ from traceforge.persistence.models import (
     ScoringResult,
     ToolCall,
 )
-from traceforge.persistence.models import TestCase as Case
-from traceforge.providers.fake import FINAL
+from benchwarden.persistence.models import TestCase as Case
+from benchwarden.providers.fake import FINAL
 
 pytestmark = pytest.mark.integration
 

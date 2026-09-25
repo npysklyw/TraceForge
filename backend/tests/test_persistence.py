@@ -7,14 +7,14 @@ from conftest import alembic_config
 from sqlalchemy import inspect, select, text
 from sqlalchemy.exc import DataError, IntegrityError
 
-from traceforge.api.schemas import (
+from benchwarden.api.schemas import (
     CaseResultResponse,
     EvaluationRunResponse,
     ScoringResultResponse,
     ToolCallResponse,
 )
-from traceforge.domain.status import CaseStatus, RunStatus
-from traceforge.persistence.models import (
+from benchwarden.domain.status import CaseStatus, RunStatus
+from benchwarden.persistence.models import (
     AgentConfiguration,
     Base,
     CaseResult,
@@ -24,7 +24,7 @@ from traceforge.persistence.models import (
     ScoringResult,
     ToolCall,
 )
-from traceforge.persistence.models import (
+from benchwarden.persistence.models import (
     TestCase as EvaluationCase,
 )
 

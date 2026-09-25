@@ -4,7 +4,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, JsonValue, TypeAdapter, ValidationError
 
-from traceforge.providers.base import ToolDefinition, ToolRequest
+from benchwarden.providers.base import ToolDefinition, ToolRequest
 
 json_adapter: TypeAdapter[JsonValue] = TypeAdapter(JsonValue)
 

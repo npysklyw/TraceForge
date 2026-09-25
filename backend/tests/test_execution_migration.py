@@ -7,8 +7,8 @@ from conftest import alembic_config
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
-from traceforge.domain.status import CaseStatus
-from traceforge.persistence.models import (
+from benchwarden.domain.status import CaseStatus
+from benchwarden.persistence.models import (
     AgentConfiguration,
     CaseResult,
     EvaluationDataset,
@@ -16,7 +16,7 @@ from traceforge.persistence.models import (
     ExecutionEvent,
     Project,
 )
-from traceforge.persistence.models import (
+from benchwarden.persistence.models import (
     TestCase as Case,
 )
 

@@ -5,7 +5,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, JsonValue, StringConstraints
 
-from traceforge.tools.registry import Tool, ToolRegistry
+from benchwarden.tools.registry import Tool, ToolRegistry
 
 
 class OrderArguments(BaseModel):

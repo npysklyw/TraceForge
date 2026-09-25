@@ -11,8 +11,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
-from traceforge.main import app
-from traceforge.persistence.database import get_session
+from benchwarden.main import app
+from benchwarden.persistence.database import get_session
 
 
 def alembic_config(connection):
@@ -23,13 +23,14 @@ def alembic_config(connection):
 
 @pytest.fixture(scope="session")
 def database_engine():
-    url = os.environ.get("TEST_DATABASE_URL")
+    url = os.environ.get("BENCHWARDEN_TEST_DATABASE_URL")
     if not url:
         pytest.fail(
-            "Set TEST_DATABASE_URL to a PostgreSQL database with CREATE SCHEMA permission. "
+            "Set BENCHWARDEN_TEST_DATABASE_URL to a PostgreSQL database "
+            "with CREATE SCHEMA permission. "
             "Use pytest -m 'not integration' for unit tests only."
         )
-    schema = f"traceforge_test_{uuid4().hex}"
+    schema = f"benchwarden_test_{uuid4().hex}"
     admin = create_engine(url)
     with admin.begin() as connection:
         connection.execute(text(f'CREATE SCHEMA "{schema}"'))

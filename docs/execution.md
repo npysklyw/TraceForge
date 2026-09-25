@@ -178,12 +178,12 @@ exceptions are never serialized verbatim.
 
 ## Offline demo
 
-From `backend/`, with PostgreSQL running and `DATABASE_URL` configured:
+From `backend/`, with PostgreSQL running and `BENCHWARDEN_DATABASE_URL` configured:
 
 ```powershell
 .\.venv\Scripts\python.exe -m alembic upgrade head
-.\.venv\Scripts\python.exe -m traceforge.demo
-.\.venv\Scripts\python.exe -m traceforge.demo --execute
+.\.venv\Scripts\python.exe -m benchwarden.demo
+.\.venv\Scripts\python.exe -m benchwarden.demo --execute
 ```
 
 On macOS/Linux, use `.venv/bin/python`. With Compose from the root:
@@ -191,7 +191,7 @@ On macOS/Linux, use `.venv/bin/python`. With Compose from the root:
 ```sh
 docker compose up -d --wait db
 docker compose run --rm backend python -m alembic upgrade head
-docker compose run --rm backend python -m traceforge.demo --execute
+docker compose run --rm backend python -m benchwarden.demo --execute
 ```
 
 The seed reuses its named project/configuration/dataset on repeated calls. Each

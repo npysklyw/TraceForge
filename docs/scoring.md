@@ -225,7 +225,7 @@ After startup, from `backend/` in PowerShell:
 
 ```powershell
 .\.venv\Scripts\python.exe -m alembic upgrade head
-$demo = .\.venv\Scripts\python.exe -m traceforge.demo --scoring --execute | ConvertFrom-Json
+$demo = .\.venv\Scripts\python.exe -m benchwarden.demo --scoring --execute | ConvertFrom-Json
 $body = @{ project_id=$demo.project_id; agent_configuration_id=$demo.agent_configuration_id; dataset_id=$demo.dataset_id } | ConvertTo-Json
 $candidate = Invoke-RestMethod http://localhost:8000/runs -Method Post -ContentType 'application/json' -Body $body
 Invoke-RestMethod "http://localhost:8000/runs/$($candidate.id)/execute" -Method Post

@@ -5,18 +5,18 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import func, select
 
-from traceforge.application.evaluations import EvaluationService
-from traceforge.demo import seed_demo
-from traceforge.domain.status import CaseStatus, RunStatus
-from traceforge.persistence.models import (
+from benchwarden.application.evaluations import EvaluationService
+from benchwarden.demo import seed_demo
+from benchwarden.domain.status import CaseStatus, RunStatus
+from benchwarden.persistence.models import (
     CaseResult,
     EvaluationRun,
     ExecutionEvent,
 )
-from traceforge.persistence.models import (
+from benchwarden.persistence.models import (
     TestCase as Case,
 )
-from traceforge.providers.fake import FakeModelProvider
+from benchwarden.providers.fake import FakeModelProvider
 
 pytestmark = pytest.mark.integration
 

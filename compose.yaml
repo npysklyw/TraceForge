@@ -1,13 +1,13 @@
-name: traceforge
+name: benchwarden
 services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-traceforge}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-traceforge}
-      POSTGRES_DB: ${POSTGRES_DB:-traceforge}
+      POSTGRES_USER: ${BENCHWARDEN_POSTGRES_USER:-benchwarden}
+      POSTGRES_PASSWORD: ${BENCHWARDEN_POSTGRES_PASSWORD:-benchwarden}
+      POSTGRES_DB: ${BENCHWARDEN_POSTGRES_DB:-benchwarden}
     ports:
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${BENCHWARDEN_POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -18,14 +18,14 @@ services:
   backend:
     build: ./backend
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-traceforge}:${POSTGRES_PASSWORD:-traceforge}@db:5432/${POSTGRES_DB:-traceforge}
-      TEST_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-traceforge}:${POSTGRES_PASSWORD:-traceforge}@db:5432/${POSTGRES_DB:-traceforge}
+      BENCHWARDEN_DATABASE_URL: postgresql+psycopg://${BENCHWARDEN_POSTGRES_USER:-benchwarden}:${BENCHWARDEN_POSTGRES_PASSWORD:-benchwarden}@db:5432/${BENCHWARDEN_POSTGRES_DB:-benchwarden}
+      BENCHWARDEN_TEST_DATABASE_URL: postgresql+psycopg://${BENCHWARDEN_POSTGRES_USER:-benchwarden}:${BENCHWARDEN_POSTGRES_PASSWORD:-benchwarden}@db:5432/${BENCHWARDEN_POSTGRES_DB:-benchwarden}
     depends_on:
       db:
         condition: service_healthy
-    command: ["sh", "-c", "alembic upgrade head && uvicorn traceforge.main:app --host 0.0.0.0 --port 8000 --reload"]
+    command: ["sh", "-c", "alembic upgrade head && uvicorn benchwarden.main:app --host 0.0.0.0 --port 8000 --reload"]
     ports:
-      - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
+      - "127.0.0.1:${BENCHWARDEN_BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend/src:/app/src
     healthcheck:
@@ -36,9 +36,9 @@ services:
   frontend:
     build: ./frontend
     environment:
-      API_PROXY_TARGET: http://backend:8000
+      BENCHWARDEN_API_PROXY_TARGET: http://backend:8000
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-5173}:5173"
+      - "127.0.0.1:${BENCHWARDEN_FRONTEND_PORT:-5173}:5173"
     volumes:
       - ./frontend/src:/app/src
     depends_on:
@@ -46,3 +46,4 @@ services:
         condition: service_healthy
 volumes:
   postgres_data:
+    name: ${BENCHWARDEN_POSTGRES_VOLUME:-benchwarden_postgres_data}
