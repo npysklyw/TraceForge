@@ -7,4 +7,4 @@ COPY tests ./tests
 COPY alembic.ini ./
 COPY migrations ./migrations
 EXPOSE 8000
-CMD ["uvicorn", "traceforge.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "benchwarden.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -1,4 +1,7 @@
-# TraceForge
+# Benchwarden
+
+Upgrading an existing installation? Read [rename and data compatibility](docs/rename.md)
+before replacing environment files or starting Compose.
 
 An independently developed evaluation and reliability platform for tool-calling
 AI agents. **Current scope: deterministic execution, trace capture, scoring, and run comparison.**
@@ -37,7 +40,7 @@ docker compose up --build --wait
 - Frontend: http://localhost:5173
 - API health: http://localhost:8000/health (returns `{"status":"ok"}`)
 - API documentation: http://localhost:8000/docs
-- PostgreSQL: `localhost:5432`, database/user/password `traceforge` by default.
+- PostgreSQL: `localhost:5432`, database/user/password `benchwarden` by default.
 
 The health link in the UI uses `/api/health`, proxied by Vite to the backend.
 The backend waits for PostgreSQL, applies Alembic migrations, and then starts.
@@ -72,7 +75,7 @@ py -3.12 -m venv .venv
 Copy-Item .env.example .env
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 .\.venv\Scripts\python.exe -m alembic upgrade head
-.\.venv\Scripts\python.exe -m uvicorn traceforge.main:app --reload --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python.exe -m uvicorn benchwarden.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 ```sh
@@ -82,10 +85,10 @@ python3.12 -m venv .venv
 cp .env.example .env
 .venv/bin/python -m pip install -e '.[dev]'
 .venv/bin/python -m alembic upgrade head
-.venv/bin/python -m uvicorn traceforge.main:app --reload --host 127.0.0.1 --port 8000
+.venv/bin/python -m uvicorn benchwarden.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-The backend and Alembic read `DATABASE_URL` from `backend/.env` when invoked from
+The backend and Alembic read `BENCHWARDEN_DATABASE_URL` from `backend/.env` when invoked from
 `backend/`; environment variables take precedence. Change the URL if your local
 PostgreSQL port or credentials differ. URL-encode special characters in credentials.
 If the Windows Python launcher `py` is unavailable, substitute the full path to an
@@ -100,7 +103,7 @@ npm run dev
 ```
 
 The proxy defaults to `http://127.0.0.1:8000`. To change it, copy
-`frontend/.env.example` to `frontend/.env` and edit `API_PROXY_TARGET`.
+`frontend/.env.example` to `frontend/.env` and edit `BENCHWARDEN_API_PROXY_TARGET`.
 Restart Vite after changing environment variables. Never put provider secrets in
 browser-exposed `VITE_*` variables. The static build requires an `/api` reverse
 proxy when eventually deployed; Vite's development proxy is not in the build.
@@ -113,16 +116,16 @@ Backend (PowerShell, from `backend/`, after installing dependencies):
 .\.venv\Scripts\python.exe -m ruff check .
 .\.venv\Scripts\python.exe -m ruff format --check .
 .\.venv\Scripts\python.exe -m mypy
-$env:TEST_DATABASE_URL = "postgresql+psycopg://traceforge:traceforge@localhost:5432/traceforge"
+$env:BENCHWARDEN_TEST_DATABASE_URL = "postgresql+psycopg://benchwarden:benchwarden@localhost:5432/benchwarden"
 .\.venv\Scripts\python.exe -m alembic check
 .\.venv\Scripts\python.exe -m pytest
 ```
 
 On macOS/Linux, replace `.\.venv\Scripts\python.exe` with `.venv/bin/python` and set
-`export TEST_DATABASE_URL=postgresql+psycopg://traceforge:traceforge@localhost:5432/traceforge`.
+`export BENCHWARDEN_TEST_DATABASE_URL=postgresql+psycopg://benchwarden:benchwarden@localhost:5432/benchwarden`.
 Run `alembic upgrade head` before `alembic check`. The test URL must be explicitly
 exported (pytest does not read it from `.env`); use a local development database
-with CREATE SCHEMA permission. Each test suite migrates a unique `traceforge_test_*`
+with CREATE SCHEMA permission. Each test suite migrates a unique `benchwarden_test_*`
 schema, rolls back each test, and drops only that schema afterward. Tests also
 exercise downgrade/re-upgrade and check migration/ORM consistency. No SQLite
 substitution or `create_all` shortcut is used. To run only database-free tests:
@@ -164,7 +167,7 @@ See [execution and traces](docs/execution.md) for architecture, lifecycle diagra
 API routes, redaction limits, and a trace example. From `backend/` after migration:
 
 ```powershell
-.\.venv\Scripts\python.exe -m traceforge.demo --execute
+.\.venv\Scripts\python.exe -m benchwarden.demo --execute
 ```
 
 Use `.venv/bin/python` on macOS/Linux. The seed is reusable; each execution creates
@@ -175,7 +178,7 @@ completed cases, so the demo run ends `failed`. This is expected behavior.
 
 See [deterministic scoring](docs/scoring.md) for expectation examples, configured USD
 pricing, metric denominators, API routes, historical compatibility, and adding
-scorer types. Use `python -m traceforge.demo --scoring --execute` with the backend
+scorer types. Use `python -m benchwarden.demo --scoring --execute` with the backend
 virtual environment for a separately named scoring demo. Execution errors remain
 unscored; evaluation outcomes never replace execution statuses.
 

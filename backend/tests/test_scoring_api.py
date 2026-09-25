@@ -5,11 +5,11 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import select
 
-from traceforge.application.evaluations import EvaluationService
-from traceforge.persistence.models import CaseResult, EvaluationRun
-from traceforge.persistence.models import TestCase as Case
-from traceforge.providers.base import ModelResponse, Usage
-from traceforge.providers.fake import FINAL
+from benchwarden.application.evaluations import EvaluationService
+from benchwarden.persistence.models import CaseResult, EvaluationRun
+from benchwarden.persistence.models import TestCase as Case
+from benchwarden.providers.base import ModelResponse, Usage
+from benchwarden.providers.fake import FINAL
 
 pytestmark = pytest.mark.integration
 
@@ -248,7 +248,7 @@ def test_comparison_incompatibilities(client, session, records, mismatch):
     result = session.scalar(select(CaseResult).where(CaseResult.run_id == run.id))
     if mismatch == "dataset":
         # Different run's valid empty dataset; compatibility rejects before inspecting cases.
-        from traceforge.persistence.models import EvaluationDataset
+        from benchwarden.persistence.models import EvaluationDataset
 
         dataset = EvaluationDataset(project_id=run.project_id, name="unrelated")
         session.add(dataset)
@@ -294,7 +294,7 @@ def test_pending_legacy_missing_and_invalid_routes(client, session, records):
 def test_unmatched_cases_reported_explicitly(client, session, records):
     from datetime import UTC, datetime
 
-    from traceforge.domain.status import CaseStatus
+    from benchwarden.domain.status import CaseStatus
 
     configure(client, records, EXPECTATIONS[:1])
     baseline, candidate = create(client, records), create(client, records)
@@ -355,10 +355,10 @@ def test_comparison_distinguishes_boolean_and_number_snapshots(client, session, 
 
 
 def test_scoring_demo_is_idempotent_and_evaluated(session):
-    from traceforge.application.evaluations import create_run
-    from traceforge.application.scoring import results_for_run
-    from traceforge.demo import seed_demo
-    from traceforge.scoring.metrics import aggregate
+    from benchwarden.application.evaluations import create_run
+    from benchwarden.application.scoring import results_for_run
+    from benchwarden.demo import seed_demo
+    from benchwarden.scoring.metrics import aggregate
 
     ids = seed_demo(session, scoring=True)
     assert seed_demo(session, scoring=True) == ids

@@ -8,8 +8,8 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from traceforge.domain.status import CaseStatus
-from traceforge.persistence.models import CaseResult
+from benchwarden.domain.status import CaseStatus
+from benchwarden.persistence.models import CaseResult
 
 Outcome = Literal["passed", "failed", "not_scored"]
 

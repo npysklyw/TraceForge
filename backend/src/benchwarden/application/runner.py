@@ -7,9 +7,9 @@ from time import perf_counter
 
 from pydantic import JsonValue
 
-from traceforge.application.redaction import TraceSanitizer
-from traceforge.providers.base import Message, ModelProvider, ModelRequest, ModelResponse, Usage
-from traceforge.tools.registry import InvalidToolArguments, ToolRegistry, UnknownTool
+from benchwarden.application.redaction import TraceSanitizer
+from benchwarden.providers.base import Message, ModelProvider, ModelRequest, ModelResponse, Usage
+from benchwarden.tools.registry import InvalidToolArguments, ToolRegistry, UnknownTool
 
 
 @dataclass(frozen=True)

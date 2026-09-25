@@ -5,12 +5,12 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from traceforge.application.comparison import compare_case, delta
-from traceforge.domain.status import CaseStatus
-from traceforge.persistence.models import CaseResult, ScoringResult
-from traceforge.scoring.expectations import Pricing, parse_expectations
-from traceforge.scoring.metrics import aggregate, outcome
-from traceforge.scoring.scorers import Evidence, ToolEvidence, estimate_cost, json_equal, score
+from benchwarden.application.comparison import compare_case, delta
+from benchwarden.domain.status import CaseStatus
+from benchwarden.persistence.models import CaseResult, ScoringResult
+from benchwarden.scoring.expectations import Pricing, parse_expectations
+from benchwarden.scoring.metrics import aggregate, outcome
+from benchwarden.scoring.scorers import Evidence, ToolEvidence, estimate_cost, json_equal, score
 
 
 def evaluate(kind, evidence, **kwargs):

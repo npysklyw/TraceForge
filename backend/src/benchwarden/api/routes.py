@@ -8,9 +8,9 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from traceforge.api import schemas as s
-from traceforge.persistence.database import get_session
-from traceforge.persistence.models import (
+from benchwarden.api import schemas as s
+from benchwarden.persistence.database import get_session
+from benchwarden.persistence.models import (
     AgentConfiguration,
     EvaluationDataset,
     EvaluationRun,

@@ -7,10 +7,10 @@ from conftest import alembic_config
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
-from traceforge.application.evaluations import EvaluationService, create_run
-from traceforge.persistence.models import AgentConfiguration, EvaluationDataset, Project
-from traceforge.persistence.models import TestCase as Case
-from traceforge.providers.fake import FINAL
+from benchwarden.application.evaluations import EvaluationService, create_run
+from benchwarden.persistence.models import AgentConfiguration, EvaluationDataset, Project
+from benchwarden.persistence.models import TestCase as Case
+from benchwarden.providers.fake import FINAL
 
 pytestmark = pytest.mark.integration
 

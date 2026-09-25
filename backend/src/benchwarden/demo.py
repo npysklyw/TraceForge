@@ -1,4 +1,4 @@
-"""Seed original fictional support scenarios: python -m traceforge.demo [--execute]."""
+"""Seed original fictional support scenarios: python -m benchwarden.demo [--execute]."""
 
 import argparse
 import json
@@ -7,20 +7,28 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from traceforge.application.evaluations import EvaluationService, create_run
-from traceforge.persistence.database import get_engine
-from traceforge.persistence.models import AgentConfiguration, EvaluationDataset, Project, TestCase
-from traceforge.providers.base import ModelResponse
-from traceforge.providers.fake import FINAL, SCENARIOS
+from benchwarden.application.evaluations import EvaluationService, create_run
+from benchwarden.persistence.database import get_engine
+from benchwarden.persistence.models import AgentConfiguration, EvaluationDataset, Project, TestCase
+from benchwarden.providers.base import ModelResponse
+from benchwarden.providers.fake import FINAL, SCENARIOS
 
 
 def seed_demo(session: Session, *, scoring: bool = False) -> tuple[UUID, UUID, UUID]:
     name = (
-        "TraceForge fictional support scoring demo"
+        "Benchwarden fictional support scoring demo"
         if scoring
-        else "TraceForge fictional support demo"
+        else "Benchwarden fictional support demo"
     )
     project = session.scalar(select(Project).where(Project.name == name))
+    if project is None:
+        # Existing installations retain their original seed IDs and stored display names.
+        legacy_name = (
+            "TraceForge fictional support scoring demo"
+            if scoring
+            else "TraceForge fictional support demo"
+        )
+        project = session.scalar(select(Project).where(Project.name == legacy_name))
     if project is not None:
         agent = session.scalar(
             select(AgentConfiguration).where(AgentConfiguration.project_id == project.id)

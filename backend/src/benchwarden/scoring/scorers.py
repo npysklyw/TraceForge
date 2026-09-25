@@ -9,7 +9,7 @@ from typing import cast
 
 from pydantic import JsonValue
 
-from traceforge.scoring.expectations import (
+from benchwarden.scoring.expectations import (
     ExactOutput,
     Expectation,
     MaxCost,

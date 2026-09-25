@@ -3,12 +3,12 @@ from dataclasses import asdict
 
 import pytest
 
-from traceforge.application.redaction import TraceSanitizer
-from traceforge.application.runner import AgentRunner
-from traceforge.providers.base import ModelRequest, ModelResponse, ToolRequest, Usage
-from traceforge.providers.fake import FINAL, SCENARIOS, FakeModelProvider
-from traceforge.tools.registry import InvalidToolArguments, Tool, ToolRegistry
-from traceforge.tools.support import OrderArguments, support_registry
+from benchwarden.application.redaction import TraceSanitizer
+from benchwarden.application.runner import AgentRunner
+from benchwarden.providers.base import ModelRequest, ModelResponse, ToolRequest, Usage
+from benchwarden.providers.fake import FINAL, SCENARIOS, FakeModelProvider
+from benchwarden.tools.registry import InvalidToolArguments, Tool, ToolRegistry
+from benchwarden.tools.support import OrderArguments, support_registry
 
 
 def execute(scenario, *, provider=None, registry=None, max_steps=8, inputs=None):

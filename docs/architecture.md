@@ -22,9 +22,9 @@ records and scorers must not depend on FastAPI, SQLAlchemy, or vendor SDKs. Intr
 interfaces at real boundaries, not a generic repository or dependency framework.
 
 ```text
-TraceForge/
+Benchwarden/
   backend/
-    src/traceforge/
+    src/benchwarden/
       main.py               # current API entry point
       api/                  # CRUD routes and request/response schemas
       domain/               # provider-independent status enums and transition rules

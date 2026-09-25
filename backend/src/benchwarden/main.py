@@ -5,10 +5,10 @@ from typing import Literal
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from traceforge.api.execution import router as execution_router
-from traceforge.api.routes import router
+from benchwarden.api.execution import router as execution_router
+from benchwarden.api.routes import router
 
-app = FastAPI(title="TraceForge", version="0.1.0")
+app = FastAPI(title="Benchwarden", version="0.1.0")
 app.include_router(router)
 app.include_router(execution_router)
 

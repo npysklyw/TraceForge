@@ -4,7 +4,7 @@ from functools import lru_cache
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 
-from traceforge.settings import get_settings
+from benchwarden.settings import get_settings
 
 
 @lru_cache

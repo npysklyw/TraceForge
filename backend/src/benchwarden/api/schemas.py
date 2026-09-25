@@ -12,9 +12,9 @@ from pydantic import (
     model_validator,
 )
 
-from traceforge.application.redaction import TraceSanitizer
-from traceforge.domain.status import CaseStatus, RunStatus
-from traceforge.scoring.expectations import Expectation, Pricing, parse_expectations
+from benchwarden.application.redaction import TraceSanitizer
+from benchwarden.domain.status import CaseStatus, RunStatus
+from benchwarden.scoring.expectations import Expectation, Pricing, parse_expectations
 
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Description = Annotated[str, StringConstraints(max_length=10000)]

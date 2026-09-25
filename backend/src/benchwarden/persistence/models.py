@@ -22,7 +22,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
-from traceforge.domain.status import CaseStatus, RunStatus
+from benchwarden.domain.status import CaseStatus, RunStatus
 
 
 class Base(DeclarativeBase):
@@ -198,7 +198,7 @@ class CaseResult(Record):
 
     @property
     def evaluation_outcome(self) -> str:
-        from traceforge.scoring.metrics import outcome
+        from benchwarden.scoring.metrics import outcome
 
         return outcome(self)
 
