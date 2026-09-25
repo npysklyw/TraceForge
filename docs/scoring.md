@@ -253,6 +253,6 @@ status `failed`. The rates are fictional test fixtures, not vendor pricing.
    execution statuses or edit existing scores.
 
 LLM judges, weighted/optional assertions, cross-dataset lineage, frontend screens,
-real provider pricing adapters, CI policy enforcement, and durable worker recovery
-remain deferred. The next milestone is CI thresholds and a machine-readable
-command-line report using these explicit coverage and success denominators.
+real provider pricing adapters, and durable worker recovery remain deferred.
+[CLI and CI gates](cli-ci.md) now enforce policies using these explicit coverage
+and success denominators.

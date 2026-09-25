@@ -1,0 +1,90 @@
+name: Quality and offline regression gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: benchwarden
+          POSTGRES_PASSWORD: local-ci-only
+          POSTGRES_DB: benchwarden
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U benchwarden -d benchwarden"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      BENCHWARDEN_DATABASE_URL: postgresql+psycopg://benchwarden:local-ci-only@localhost:5432/benchwarden
+      BENCHWARDEN_TEST_DATABASE_URL: postgresql+psycopg://benchwarden:local-ci-only@localhost:5432/benchwarden
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m ruff check .
+      - run: python -m ruff format --check .
+      - run: python -m mypy
+      - name: Migrations and drift
+        run: |
+          python -m alembic upgrade head
+          python -m alembic downgrade base
+          python -m alembic upgrade head
+          python -m alembic check
+      - name: Tests including controlled failing gate and populated migrations
+        run: python -m pytest
+      - name: Passing offline PR gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          reports=$(mktemp -d)
+          benchwarden seed-ci --json > "$reports/seed.json"
+          field() { python -c 'import json,sys; print(json.load(open(sys.argv[1]))["data"][sys.argv[2]])' "$1" "$2"; }
+          dataset=$(field "$reports/seed.json" dataset_id)
+          baseline_config=$(field "$reports/seed.json" baseline_config_id)
+          candidate_config=$(field "$reports/seed.json" candidate_config_id)
+          benchwarden run "$dataset" --config "$baseline_config" --json > "$reports/baseline.json"
+          benchwarden run "$dataset" --config "$candidate_config" --json > "$reports/candidate.json"
+          baseline=$(field "$reports/baseline.json" run_id)
+          candidate=$(field "$reports/candidate.json" run_id)
+          benchwarden score "$baseline" --json
+          benchwarden score "$candidate" --json
+          benchwarden compare "$baseline" "$candidate" --json
+          benchwarden check "$candidate" --baseline "$baseline" \
+            --min-pass-rate 1 --min-end-to-end-success-rate 1 \
+            --min-evaluation-coverage 1 --max-execution-errors 0 \
+            --max-token-increase 0 --max-cost-increase 0 --max-regressions 0 --json
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npx tsc --noEmit
+      - run: npm run build

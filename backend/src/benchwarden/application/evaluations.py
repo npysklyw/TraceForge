@@ -29,7 +29,7 @@ from benchwarden.persistence.models import (
     ToolCall,
 )
 from benchwarden.providers.base import ModelProvider, ModelRequest
-from benchwarden.providers.fake import FakeModelProvider
+from benchwarden.providers.fake import FAKE_VARIANTS, FakeModelProvider
 from benchwarden.scoring.expectations import VERSION, Pricing, parse_expectations
 from benchwarden.tools.registry import ToolRegistry
 from benchwarden.tools.support import support_registry
@@ -70,6 +70,9 @@ def validate_agent(agent: AgentConfiguration) -> None:
     if agent.provider != "fake":
         raise InvalidEvaluation("Only the offline fake provider is executable in this milestone")
     max_steps(agent)
+    variant = agent.parameters.get("fake_variant", "standard")
+    if not isinstance(variant, str) or variant not in FAKE_VARIANTS:
+        raise InvalidEvaluation("Unsupported fake_variant configuration")
 
 
 def create_run(

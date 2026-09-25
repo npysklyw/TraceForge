@@ -10,6 +10,8 @@ from benchwarden.providers.base import (
     Usage,
 )
 
+FAKE_VARIANTS = frozenset({"standard", "wrong_answer"})
+
 
 @dataclass(frozen=True)
 class Failure:
@@ -54,6 +56,9 @@ SCENARIOS: MappingProxyType[str, tuple[ModelResponse | Failure, ...]] = MappingP
 
 class FakeModelProvider:
     def complete(self, request: ModelRequest) -> ModelResponse:
+        variant = request.parameters.get("fake_variant", "standard")
+        if not isinstance(variant, str) or variant not in FAKE_VARIANTS:
+            raise ProviderError("Unknown fake variant")
         scenario = request.input.get("scenario", "text_only")
         if not isinstance(scenario, str) or scenario not in SCENARIOS:
             raise ProviderError("Unknown fake scenario")
@@ -66,4 +71,8 @@ class FakeModelProvider:
             if action.kind == "timeout":
                 raise TimeoutError("Simulated timeout")
             raise ProviderError("Simulated provider failure")
+        if variant == "wrong_answer" and action.text is not None:
+            return action.model_copy(
+                update={"text": "Deliberately incorrect fictional answer."}, deep=True
+            )
         return action.model_copy(deep=True)
