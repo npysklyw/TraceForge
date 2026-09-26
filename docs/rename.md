@@ -1,8 +1,9 @@
 # Benchwarden rename and existing installations
 
 The product name is **Benchwarden**, the Python distribution and import package
-are `benchwarden`, and the frontend package is `benchwarden-frontend`. The future
-CLI name is `benchwarden`; this change does not implement a CLI or CI policies.
+are `benchwarden`, and the frontend package is `benchwarden-frontend`.
+The rename itself did not add CLI or CI policies; the subsequent
+[CLI milestone](cli-ci.md) provides the `benchwarden` command.
 
 The planned repository URL is <https://github.com/npysklyw/BenchWarden>. The remote
 repository has not been renamed. Keep the current origin until this PR merges

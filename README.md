@@ -157,8 +157,9 @@ docker compose run --rm --no-deps frontend npm run build
 ```
 
 Frontend dependencies are locked in `package-lock.json`. Backend dependencies
-currently use bounded ranges in `pyproject.toml`; add a reproducible Python lock
-workflow before CI/release. SQLAlchemy 2, Alembic, and psycopg are now installed.
+currently use bounded ranges in `pyproject.toml`; a reproducible Python lock
+workflow remains a follow-up for release reproducibility. SQLAlchemy 2, Alembic,
+and psycopg are now installed.
 Model-provider SDKs remain deferred. No API key is required.
 
 ## Execute the offline demo
@@ -182,8 +183,16 @@ scorer types. Use `python -m benchwarden.demo --scoring --execute` with the back
 virtual environment for a separately named scoring demo. Execution errors remain
 unscored; evaluation outcomes never replace execution statuses.
 
+## CLI and CI regression gates
+
+See [CLI and PR quality gates](docs/cli-ci.md) for copyable Bash and PowerShell
+examples, JSON output, exit codes, and threshold semantics. Install the backend
+to use `benchwarden run`, `score`, `compare`, `check`, and `seed-ci`.
+
+The GitHub Actions workflow runs an offline passing gate against PostgreSQL and
+all backend/frontend checks. Tests separately assert that controlled regressions fail.
+
 ## Next milestone
 
-Add CI thresholds and machine-readable CLI reports using evaluation coverage and
-end-to-end success rate, with explicit policy for execution errors. Real model
-providers and LLM-as-judge scoring are not required.
+Add failure replay and result inspection using existing stored traces. Durable
+execution recovery, release dependency locking, and CI report publishing remain follow-ups.

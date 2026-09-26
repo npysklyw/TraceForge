@@ -34,7 +34,7 @@ Benchwarden/
       persistence/          # SQLAlchemy records and session management
       tools/                # typed registry and fictional support tools
       demo.py               # idempotent seed and offline demo execution
-      cli.py                # future CI entry point
+      cli.py                # terminal adapter and CI entry point
     migrations/             # explicit Alembic revisions
     tests/
     pyproject.toml
@@ -104,7 +104,7 @@ identifies the exact current guarantees and remaining work.
 5. **Comparison (complete) and replay (deferred):** list runs, compare versions on a shared dataset
    revision, inspect case details, and replay recorded failures. Acceptance: replay
    never calls a model or tool; incompatible comparisons are clearly identified.
-6. **CI integration:** add a CLI over the same use cases, JSON results, deterministic
+6. **CI integration (complete):** add a CLI over the same use cases, JSON results, deterministic
    fixtures, and a sample CI workflow. Acceptance: passing, failing, and execution
    error runs return documented distinct exit codes without any API key.
 
